@@ -14,3 +14,5 @@ node_modules/
 dist/
 .coverage
 htmlcov/
+next-env.d.ts
+.env.local

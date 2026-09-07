@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+  }
+  /* Figures line up column-wise; a pay table is unreadable otherwise. */
+  .figure {
+    @apply font-figure tabular-nums;
+  }
+}
