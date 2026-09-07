@@ -60,18 +60,18 @@ class Money:
         """The value in major units, for display and serialisation."""
         return Decimal(self.amount_minor).scaleb(-self.currency.exponent)
 
-    def _same_currency_as(self, other: Money) -> None:
+    def require_same_currency_as(self, other: Money) -> None:
         if self.currency != other.currency:
             raise CurrencyMismatch(
                 f"cannot combine {self.currency.code} with {other.currency.code}"
             )
 
     def __add__(self, other: Money) -> Money:
-        self._same_currency_as(other)
+        self.require_same_currency_as(other)
         return Money(self.amount_minor + other.amount_minor, self.currency)
 
     def __sub__(self, other: Money) -> Money:
-        self._same_currency_as(other)
+        self.require_same_currency_as(other)
         return Money(self.amount_minor - other.amount_minor, self.currency)
 
     def __mul__(self, factor: Decimal | int) -> Money:
@@ -82,7 +82,7 @@ class Money:
         return Money(to_whole_minor_units(scaled), self.currency)
 
     def __lt__(self, other: Money) -> bool:
-        self._same_currency_as(other)
+        self.require_same_currency_as(other)
         return self.amount_minor < other.amount_minor
 
     def __str__(self) -> str:
