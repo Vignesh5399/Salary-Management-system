@@ -70,3 +70,24 @@ inclusive `ends_on`, and the successor period starts the following day.
 The cost is that adjacency is `end + 1 day == next.start` rather than
 `end == next.start`, which is one more thing the overlap test has to get right —
 so there is an explicit test for exactly that case.
+
+---
+
+## Session 4 — Corrections, and what I chose not to build yet
+
+**Suggested:** make the compensation history bitemporal — every record carries
+both the period it applied to (valid time) and when it was entered (transaction
+time), so a correction is a second record with the same effective date and a
+later entry timestamp, and `salary_on()` resolves ties by whichever was recorded
+most recently.
+
+**Deferred, not rejected.** This is the correct model for "HR typed 50,000 when
+it should have been 55,000", and that case is real. But it doubles the
+resolution logic in the aggregate, and it needs an injectable clock to keep
+tests deterministic. Neither is justified before the single-timeline case works.
+
+I have taken the smaller step: the history is a chain in valid time only, and
+`ChangeReason` has no CORRECTION member yet, because a reason code with no
+supporting mechanism is worse than an honest gap. When corrections are built,
+the change is additive — a `recorded_at` field and a tie-break in `salary_on()`.
+The tests written now stay valid, which is the point of stopping here.
