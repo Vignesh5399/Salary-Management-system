@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from decimal import Decimal
 from enum import Enum
@@ -31,6 +31,10 @@ class CompensationRecord:
     amount: Money
     period: EffectivePeriod
     reason: ChangeReason
+
+    def closed_on(self, day: date) -> CompensationRecord:
+        """A copy of this record, no longer in force after ``day``."""
+        return replace(self, period=self.period.closing_on(day))
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,7 +79,19 @@ class CompensationHistory:
         self, amount: Money, *, effective_from: date, reason: ChangeReason
     ) -> CompensationHistory:
         current = self._current_record
+        self._reject_unless_applicable(amount, effective_from)
 
+        successor = CompensationRecord(
+            amount=amount,
+            period=EffectivePeriod.opening_on(effective_from),
+            reason=reason,
+        )
+        superseded = current.closed_on(effective_from - timedelta(days=1))
+
+        return CompensationHistory((*self.records[:-1], superseded, successor))
+
+    def _reject_unless_applicable(self, amount: Money, effective_from: date) -> None:
+        current = self._current_record
         if amount.currency != current.amount.currency:
             raise InvalidCompensationChange(
                 f"cannot change currency from {current.amount.currency.code} to "
@@ -86,18 +102,6 @@ class CompensationHistory:
                 f"a change effective {effective_from} would supersede a salary that "
                 f"started {current.period.starts_on}"
             )
-
-        superseded = CompensationRecord(
-            amount=current.amount,
-            period=current.period.closing_on(effective_from - timedelta(days=1)),
-            reason=current.reason,
-        )
-        successor = CompensationRecord(
-            amount=amount,
-            period=EffectivePeriod.opening_on(effective_from),
-            reason=reason,
-        )
-        return CompensationHistory((*self.records[:-1], superseded, successor))
 
     def raise_by(
         self, percent: Decimal, *, effective_from: date, reason: ChangeReason
