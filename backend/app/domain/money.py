@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 from functools import total_ordering
 
 from app.domain.currency import Currency
+from app.domain.rounding import to_whole_minor_units
 
 
 def _resolve(currency: str | Currency) -> Currency:
@@ -77,17 +78,11 @@ class Money:
         return Money(-self.amount_minor, self.currency)
 
     def __mul__(self, factor: Decimal | int) -> Money:
-        """Scale by a factor, rounding half up.
-
-        Half up rather than half even because the usual caller is a percentage
-        raise, and rounding against the employee is the wrong default.
-        """
+        """Scale by a factor, e.g. a percentage raise."""
         if isinstance(factor, float):
             raise TypeError("scale Money by a Decimal or int, never a float")
-        scaled = (Decimal(self.amount_minor) * Decimal(factor)).quantize(
-            Decimal(1), rounding=ROUND_HALF_UP
-        )
-        return Money(int(scaled), self.currency)
+        scaled = Decimal(self.amount_minor) * Decimal(factor)
+        return Money(to_whole_minor_units(scaled), self.currency)
 
     def __lt__(self, other: Money) -> bool:
         self._same_currency_as(other)

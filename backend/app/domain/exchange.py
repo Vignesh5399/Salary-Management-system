@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 
 from app.domain.currency import Currency
 from app.domain.money import Money
+from app.domain.rounding import to_whole_minor_units
 
 
 class InvalidRate(ValueError):
@@ -57,9 +58,8 @@ class ExchangeRate:
         # Scale through major units so that source and target exponents may differ.
         in_major = Decimal(amount.amount_minor).scaleb(-self.base.exponent)
         converted = (in_major * self.rate).scaleb(self.quote.exponent)
-        minor = converted.quantize(Decimal(1), rounding=ROUND_HALF_UP)
 
-        return Money(int(minor), self.quote)
+        return Money(to_whole_minor_units(converted), self.quote)
 
     def inverted(self) -> ExchangeRate:
         return ExchangeRate(
