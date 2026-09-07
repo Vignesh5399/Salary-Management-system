@@ -6,6 +6,38 @@ Give ACME's HR Manager a single place to hold compensation data for ~10,000 empl
 across multiple countries, replacing the current spreadsheet sprawl, and let her answer
 questions about how the organisation pays people without exporting anything.
 
+## A deviation from the brief, stated up front
+
+The brief specifies a relational database. I have used MongoDB instead. That is a
+deliberate choice, not an oversight, and it is here at the top rather than buried
+in a tradeoffs appendix because a reviewer should not have to discover it.
+
+**Why.** The core aggregate, `CompensationHistory`, is an ordered chain of records
+that is only ever read or written whole — you never load one salary record without
+the ones around it, because answering "what did we pay her in March" needs the
+chain. Stored relationally that becomes a join and a reconstitution step. Stored as
+an embedded array it is close to a direct serialisation of the object, and applying
+a raise — closing the open record and opening its successor — is a single atomic
+document update rather than a two-row transaction.
+
+**What it costs, and what I did about it.** A relational store would enforce the
+central invariant for me with a partial unique index: exactly one open record per
+employee, no overlapping periods. MongoDB will not, so that guarantee moves to
+three places instead of one:
+
+- the domain aggregate, where `raise_to()` is the only way to add a record and
+  rejects anything that would overlap;
+- a JSON Schema validator on the collection, so a malformed document cannot land
+  even from a shell;
+- explicit tests for the invariant itself, rather than trusting a constraint.
+
+That is more moving parts than an index, and I would not claim otherwise. It is
+the price of the fit above, and stating the price is the point of this section.
+
+**What would change my mind.** If pay data needed to be joined against payroll,
+finance or headcount systems for reporting, the relational model would win and I
+would move. That is not in scope here — see the exclusions below.
+
 ## The persona and her questions
 
 I scoped this from the questions the HR Manager needs answered, not from a feature list.

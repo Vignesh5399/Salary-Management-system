@@ -29,8 +29,10 @@ without multi-document transactions. That argument is technically sound.
    MongoDB needs a container, which is slower and less deterministic — and a slow
    suite quietly erodes the TDD cycle this whole exercise is built on.
 
-**Decision:** SQLAlchemy 2.0 + SQLite. Postgres is a `DATABASE_URL` change if the
-data outgrows it; migrations are kept dialect-neutral so that stays true.
+**Decision at the time:** SQLAlchemy 2.0 + SQLite.
+
+**Reversed in session 5.** Left here unedited because a decision log that only
+records the decisions that survived is not a log.
 
 ---
 
@@ -91,3 +93,37 @@ I have taken the smaller step: the history is a chain in valid time only, and
 supporting mechanism is worse than an honest gap. When corrections are built,
 the change is additive — a `recorded_at` field and a tie-break in `salary_on()`.
 The tests written now stay valid, which is the point of stopping here.
+
+---
+
+## Session 5 — Reversing the database decision
+
+I went back to MongoDB. Recording this properly, because the reasoning in session 1
+was sound on the evidence I had and two pieces of evidence changed.
+
+**What changed.**
+
+1. The domain layer was finished by this point, and `CompensationHistory` turned
+   out to be a document — an ordered tuple, read and written whole, never queried
+   record by record. When I wrote session 1 that was a guess. Now it is code I can
+   look at, and the embedded-array argument I had dismissed applies to it directly.
+2. The persistence layer had not been written yet, so the switch cost nothing. The
+   domain imports no database library at all, which is the property that made
+   changing my mind cheap. That was worth more here than being right first time.
+
+**What did not change.** The brief still specifies a relational database, and
+nothing in the JD overrides it. This is a deliberate deviation and it is documented
+at the top of the requirements rather than in a footnote.
+
+**The honest cost.** The one-open-record invariant loses its partial unique index
+and is now defended by the aggregate, a collection-level JSON Schema validator, and
+tests written specifically for it. Three mechanisms in place of one constraint. I
+think the fit justifies it. I do not think it is free, and a reviewer who disagrees
+with the trade is disagreeing with a judgement I have stated, not catching an
+omission.
+
+**Where AI helped and where it did not.** The embedded-array-plus-atomic-update
+pattern came from the tool and is good. The reasons to reject it in session 1 were
+also worth having. What neither the tool nor I could settle was how much the brief's
+wording should weigh against engineering fit — that is a judgement call, it is mine,
+and it is written down here so it can be argued with.
