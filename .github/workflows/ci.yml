@@ -24,4 +24,27 @@ jobs:
       - name: Type check
         run: mypy app
       - name: Test
-        run: pytest
+        run: pytest -m "not integration"
+
+  integration:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - name: Integration tests
+        env:
+          MONGODB_URL: mongodb://localhost:27017
+        run: pytest -m integration
