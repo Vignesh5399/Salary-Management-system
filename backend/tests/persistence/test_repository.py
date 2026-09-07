@@ -1,10 +1,12 @@
 """Repository tests against a real MongoDB.
 
 Marked ``integration`` and excluded from the default run. Set MONGODB_URL to
-point at a local instance, or let CI's service container provide one:
+any reachable MongoDB — an Atlas free cluster is enough:
 
-    docker run -d -p 27017:27017 mongo:7
-    MONGODB_URL=mongodb://localhost:27017 pytest -m integration
+    MONGODB_URL='mongodb+srv://...' pytest -m integration
+
+The fixture uses a separate 'salary_test' database and drops it after each
+test, so pointing this at the same cluster as the app is safe.
 """
 
 from datetime import date
