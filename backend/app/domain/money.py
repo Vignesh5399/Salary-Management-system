@@ -4,8 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
+from functools import total_ordering
 
 from app.domain.currency import Currency
+
+
+def _resolve(currency: str | Currency) -> Currency:
+    return Currency.of(currency) if isinstance(currency, str) else currency
 
 
 class CurrencyMismatch(ValueError):
@@ -16,6 +21,7 @@ class PrecisionError(ValueError):
     """Raised when an amount carries more precision than its currency allows."""
 
 
+@total_ordering
 @dataclass(frozen=True, slots=True, eq=True)
 class Money:
     """An amount of money, held as whole minor units.
@@ -32,7 +38,7 @@ class Money:
         if isinstance(amount, float):
             raise TypeError("Money cannot be built from a float; pass a str or Decimal")
 
-        resolved = Currency.of(currency) if isinstance(currency, str) else currency
+        resolved = _resolve(currency)
         value = Decimal(amount)
         scaled = value.scaleb(resolved.exponent)
 
@@ -46,8 +52,7 @@ class Money:
 
     @staticmethod
     def zero(currency: str | Currency) -> Money:
-        resolved = Currency.of(currency) if isinstance(currency, str) else currency
-        return Money(0, resolved)
+        return Money(0, _resolve(currency))
 
     @property
     def amount(self) -> Decimal:
@@ -87,18 +92,6 @@ class Money:
     def __lt__(self, other: Money) -> bool:
         self._same_currency_as(other)
         return self.amount_minor < other.amount_minor
-
-    def __le__(self, other: Money) -> bool:
-        self._same_currency_as(other)
-        return self.amount_minor <= other.amount_minor
-
-    def __gt__(self, other: Money) -> bool:
-        self._same_currency_as(other)
-        return self.amount_minor > other.amount_minor
-
-    def __ge__(self, other: Money) -> bool:
-        self._same_currency_as(other)
-        return self.amount_minor >= other.amount_minor
 
     def __str__(self) -> str:
         return f"{self.currency.code} {self.amount}"
