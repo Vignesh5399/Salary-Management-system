@@ -6,7 +6,7 @@ import pytest
 from app.domain.compensation import ChangeReason, CompensationHistory
 from app.domain.money import Money
 from app.persistence.documents import compensation_to_documents
-from app.persistence.repository import EmptyHistory, raise_guard
+from app.persistence.guards import EmptyHistory, raise_guard
 
 HIRED = date(2022, 4, 1)
 
