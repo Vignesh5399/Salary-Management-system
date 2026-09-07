@@ -37,6 +37,7 @@ class EmployeeRepository:
             **details,
             hire_date=datetime(hire_date.year, hire_date.month, hire_date.day),
             compensation=_entries(history),
+            **_current_fields(history),
         )
         return await document.insert()
 
@@ -63,8 +64,42 @@ class EmployeeRepository:
 
         query = Employee.find(criteria)
         total = await query.count()
-        employees = await query.skip((page - 1) * size).limit(size).to_list()
+        employees = await query.sort("name").skip((page - 1) * size).limit(size).to_list()
         return employees, total
+
+    async def count_below_band(self, bands: Sequence[Any]) -> int:
+        """How many people sit under the bottom of their own band."""
+        if not bands:
+            return 0
+        return await Employee.find(
+            {
+                "status": "active",
+                "$or": [
+                    {
+                        "country": band.country,
+                        "level": band.level,
+                        "current_amount_minor": {"$lt": band.minimum_minor},
+                    }
+                    for band in bands
+                ],
+            }
+        ).count()
+
+    async def payroll_by(self, dimension: str) -> list[dict[str, Any]]:
+        """Headcount and total pay per group, per currency. Converted by the caller."""
+        return await Employee.get_motor_collection().aggregate(
+            [
+                {"$match": {"status": "active"}},
+                {
+                    "$group": {
+                        "_id": {"group": f"${dimension}", "currency": "$current_currency"},
+                        "headcount": {"$sum": 1},
+                        "total_minor": {"$sum": "$current_amount_minor"},
+                    }
+                },
+                {"$sort": {"_id.group": 1}},
+            ]
+        ).to_list(length=None)
 
     async def apply_raise(
         self,
@@ -90,7 +125,12 @@ class EmployeeRepository:
         """Write a new history, but only if the stored one still matches ``expecting``."""
         result = await Employee.get_motor_collection().update_one(
             raise_guard(employee_no, compensation_to_documents(expecting)),
-            {"$set": {"compensation": compensation_to_documents(replacement)}},
+            {
+                "$set": {
+                    "compensation": compensation_to_documents(replacement),
+                    **_current_fields(replacement),
+                }
+            },
         )
         if result.matched_count == 0:
             raise ConcurrentChange(
@@ -102,6 +142,13 @@ class EmployeeRepository:
         if employee is None:
             raise UnknownEmployee(employee_no)
         return employee
+
+
+def _current_fields(history: CompensationHistory) -> dict[str, Any]:
+    return {
+        "current_amount_minor": history.current.amount_minor,
+        "current_currency": history.current.currency.code,
+    }
 
 
 def _entries(history: CompensationHistory) -> list[CompensationEntry]:

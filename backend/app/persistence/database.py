@@ -3,8 +3,8 @@
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from app.persistence.models import Employee
+from app.persistence.models import Band, Employee, Rate
 
 
 async def connect(client: AsyncIOMotorClient, database: str) -> None:
-    await init_beanie(database=client[database], document_models=[Employee])
+    await init_beanie(database=client[database], document_models=[Employee, Band, Rate])

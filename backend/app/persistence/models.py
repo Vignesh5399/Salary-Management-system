@@ -34,6 +34,12 @@ class Employee(Document):
     status: str = "active"
     compensation: list[CompensationEntry] = Field(default_factory=list)
 
+    # Denormalised from the last compensation entry. Duplication, deliberately:
+    # it makes sorting and below-band queries ordinary indexed reads instead of
+    # array arithmetic. Kept correct by writing compensation through one path.
+    current_amount_minor: int = 0
+    current_currency: str = ""
+
     class Settings:
         name = "employees"
         indexes = [
@@ -43,4 +49,43 @@ class Employee(Document):
             pymongo.IndexModel(
                 [("country", pymongo.ASCENDING), ("level", pymongo.ASCENDING)]
             ),
+            pymongo.IndexModel([("current_amount_minor", pymongo.DESCENDING)]),
+            pymongo.IndexModel([("name", pymongo.ASCENDING)]),
+        ]
+
+
+class Band(Document):
+    """A pay range for one level in one country."""
+
+    level: str
+    country: str
+    currency: str
+    minimum_minor: int
+    midpoint_minor: int
+    maximum_minor: int
+
+    class Settings:
+        name = "bands"
+        indexes = [
+            pymongo.IndexModel(
+                [("level", pymongo.ASCENDING), ("country", pymongo.ASCENDING)],
+                unique=True,
+            )
+        ]
+
+
+class Rate(Document):
+    """One unit of `base` in `quote`, from `effective_from`."""
+
+    base: str
+    quote: str
+    rate: str  # Decimal as a string; BSON Decimal128 buys nothing here
+    effective_from: datetime
+
+    class Settings:
+        name = "rates"
+        indexes = [
+            pymongo.IndexModel(
+                [("base", pymongo.ASCENDING), ("quote", pymongo.ASCENDING)]
+            )
         ]
