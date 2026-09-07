@@ -61,13 +61,5 @@ class ExchangeRate:
 
         return Money(to_whole_minor_units(converted), self.quote)
 
-    def inverted(self) -> ExchangeRate:
-        return ExchangeRate(
-            base=self.quote,
-            quote=self.base,
-            rate=1 / self.rate,
-            effective_from=self.effective_from,
-        )
-
     def __str__(self) -> str:
         return f"1 {self.base.code} = {self.rate} {self.quote.code} from {self.effective_from}"

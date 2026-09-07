@@ -78,10 +78,3 @@ def test_rates_with_the_same_terms_are_equal() -> None:
 def test_rates_with_different_values_are_not_equal() -> None:
     assert _usd_to_inr("83.00") != _usd_to_inr("84.00")
 
-
-def test_a_rate_can_be_inverted() -> None:
-    # Seed data holds one direction; reporting sometimes needs the other.
-    inverted = ExchangeRate.of("USD", "INR", "80.00", effective_from=date(2024, 1, 1)).inverted()
-
-    assert inverted.convert(Money.of("80.00", "INR")) == Money.of("1.00", "USD")
-    assert inverted.effective_from == date(2024, 1, 1)

@@ -74,9 +74,6 @@ class Money:
         self._same_currency_as(other)
         return Money(self.amount_minor - other.amount_minor, self.currency)
 
-    def __neg__(self) -> Money:
-        return Money(-self.amount_minor, self.currency)
-
     def __mul__(self, factor: Decimal | int) -> Money:
         """Scale by a factor, e.g. a percentage raise."""
         if isinstance(factor, float):
