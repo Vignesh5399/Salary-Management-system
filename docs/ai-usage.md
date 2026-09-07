@@ -52,3 +52,21 @@ right for percentage raises.
 allows, rather than rounding it silently. Rounding a user-entered figure without
 telling them is how salary data quietly drifts. Multiplication must round; parsing
 should not.
+
+---
+
+## Session 3 — Interval convention for compensation history
+
+**Suggested:** half-open intervals (`[start, end)`), the usual default in
+temporal modelling, where a record ending 2024-07-01 means the salary applied
+up to but not including that day.
+
+**Rejected.** The persona is an HR Manager reading a pay record, and to her
+"this salary ended on 30 June" means 30 June was a day she paid it. Half-open
+intervals are cleaner arithmetic but they push an off-by-one into every
+conversation between the software and the person using it. I chose an
+inclusive `ends_on`, and the successor period starts the following day.
+
+The cost is that adjacency is `end + 1 day == next.start` rather than
+`end == next.start`, which is one more thing the overlap test has to get right —
+so there is an explicit test for exactly that case.
