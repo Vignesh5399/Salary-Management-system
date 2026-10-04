@@ -51,9 +51,7 @@ class SalaryBand:
         )
         low, mid, high = bounds
         if not low <= mid <= high:
-            raise InvalidBand(
-                f"{level}/{country} bounds are out of order: {low}, {mid}, {high}"
-            )
+            raise InvalidBand(f"{level}/{country} bounds are out of order: {low}, {mid}, {high}")
         return SalaryBand(level=level, country=country, minimum=low, midpoint=mid, maximum=high)
 
     def compa_ratio(self, salary: Money) -> Decimal:

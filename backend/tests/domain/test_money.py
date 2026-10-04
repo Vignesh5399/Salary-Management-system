@@ -74,7 +74,7 @@ def test_amounts_in_the_same_currency_can_be_ordered() -> None:
 
 def test_ordering_different_currencies_is_rejected() -> None:
     with pytest.raises(CurrencyMismatch):
-        Money.of("100.00", "USD") < Money.of("100.00", "INR")
+        _ = Money.of("100.00", "USD") < Money.of("100.00", "INR")
 
 
 def test_equal_amounts_in_different_currencies_are_not_equal() -> None:

@@ -114,7 +114,7 @@ def band_fields(position: BandPosition, ratio: Decimal) -> dict[str, object]:
     return {"band_position": position.value, "compa_ratio": ratio}
 
 
-def _currency(code: str):  # noqa: ANN202 - trivial re-export to avoid a circular import
+def _currency(code: str):
     from app.domain.currency import Currency
 
     return Currency.of(code)

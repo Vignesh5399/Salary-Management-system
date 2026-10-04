@@ -41,9 +41,7 @@ async def list_employees(
             bands,
             level=employee.level,
             country=employee.country,
-            salary=Money(
-                employee.current_amount_minor, Currency.of(employee.current_currency)
-            ),
+            salary=Money(employee.current_amount_minor, Currency.of(employee.current_currency)),
         )
         if placement:
             position, ratio = placement
@@ -64,9 +62,7 @@ async def get_employee(employee_no: str) -> EmployeeDetailOut:
     detail = EmployeeDetailOut.of_employee(employee, history)
 
     bands = await load_bands()
-    placement = place(
-        bands, level=employee.level, country=employee.country, salary=history.current
-    )
+    placement = place(bands, level=employee.level, country=employee.country, salary=history.current)
     if placement:
         position, ratio = placement
         detail.band_position = position.value

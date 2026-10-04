@@ -60,8 +60,50 @@ RATES_TO_USD = {
     "AUD": "0.6600",
 }
 
-FIRST_NAMES = "Priya Arjun Meera Rahul Ananya Vikram Sofia James Chloe Daniel Wei Hana Omar Lucia Noah Ava Ethan Isla Kabir Divya".split()
-LAST_NAMES = "Sharma Nair Iyer Patel Menon Reddy Smith Jones Taylor Brown Lim Tan Chen Garcia Rossi Dubois Okafor Novak Ahmed Silva".split()
+FIRST_NAMES = [
+    "Priya",
+    "Arjun",
+    "Meera",
+    "Rahul",
+    "Ananya",
+    "Vikram",
+    "Sofia",
+    "James",
+    "Chloe",
+    "Daniel",
+    "Wei",
+    "Hana",
+    "Omar",
+    "Lucia",
+    "Noah",
+    "Ava",
+    "Ethan",
+    "Isla",
+    "Kabir",
+    "Divya",
+]
+LAST_NAMES = [
+    "Sharma",
+    "Nair",
+    "Iyer",
+    "Patel",
+    "Menon",
+    "Reddy",
+    "Smith",
+    "Jones",
+    "Taylor",
+    "Brown",
+    "Lim",
+    "Tan",
+    "Chen",
+    "Garcia",
+    "Rossi",
+    "Dubois",
+    "Okafor",
+    "Novak",
+    "Ahmed",
+    "Silva",
+]
 
 
 def _band_bounds(country_midpoint: Decimal, level: str) -> tuple[Decimal, Decimal, Decimal]:
@@ -108,14 +150,10 @@ def _employee(number: int, rng: random.Random) -> Employee:
     spread = rng.gauss(1.0, 0.11)
     if rng.random() < 0.02:
         spread = rng.choice([rng.uniform(0.68, 0.78), rng.uniform(1.22, 1.35)])
-    starting = (midpoint * Decimal(str(round(spread, 4))) * Decimal("0.85")).quantize(
-        Decimal("1")
-    )
+    starting = (midpoint * Decimal(str(round(spread, 4))) * Decimal("0.85")).quantize(Decimal("1"))
 
     hired = TODAY - timedelta(days=rng.randint(120, 2900))
-    history = CompensationHistory.starting_with(
-        Money.of(f"{starting:.2f}", currency), on=hired
-    )
+    history = CompensationHistory.starting_with(Money.of(f"{starting:.2f}", currency), on=hired)
 
     # An annual review each April the employee was present for.
     for year in range(hired.year + 1, TODAY.year):

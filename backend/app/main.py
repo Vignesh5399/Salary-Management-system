@@ -12,7 +12,7 @@ from app.persistence.database import connect
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: ANN201
+async def lifespan(app: FastAPI):
     client = AsyncIOMotorClient(settings.mongodb_url)
     await connect(client, settings.database_name)
     yield

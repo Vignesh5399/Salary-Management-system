@@ -1,11 +1,9 @@
 """One summary endpoint: what the organisation pays, in one reporting currency."""
 
-from datetime import date
 from decimal import Decimal
 
 from fastapi import APIRouter
 
-from app.api.bands import load_bands
 from app.api.schemas import GroupTotalOut, MoneyOut, SummaryOut
 from app.config import settings
 from app.domain.currency import Currency
@@ -41,9 +39,7 @@ async def _grouped(dimension: str, rates: dict[str, ExchangeRate]) -> list[Group
     for row in await repository.payroll_by(dimension):
         group = row["_id"]["group"]
         converted = _to_reporting(row["total_minor"], row["_id"]["currency"], rates)
-        headcount, running = totals.get(
-            group, (0, Money.zero(settings.reporting_currency))
-        )
+        headcount, running = totals.get(group, (0, Money.zero(settings.reporting_currency)))
         totals[group] = (headcount + row["headcount"], running + converted)
 
     return [

@@ -85,7 +85,9 @@ def test_a_round_trip_preserves_answers_about_past_dates() -> None:
 def test_naive_datetimes_are_read_back_correctly() -> None:
     # PyMongo returns naive UTC datetimes unless configured otherwise.
     documents = compensation_to_documents(_history())
-    naive = [{**doc, "effective_from": doc["effective_from"].replace(tzinfo=None)} for doc in documents]
+    naive = [
+        {**doc, "effective_from": doc["effective_from"].replace(tzinfo=None)} for doc in documents
+    ]
 
     assert compensation_from_documents(naive) == _history()
 

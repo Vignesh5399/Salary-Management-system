@@ -6,6 +6,7 @@ opening its successor a single atomic document update.
 """
 
 from datetime import datetime
+from typing import ClassVar
 
 import pymongo
 from beanie import Document
@@ -42,13 +43,11 @@ class Employee(Document):
 
     class Settings:
         name = "employees"
-        indexes = [
+        indexes: ClassVar[list[pymongo.IndexModel]] = [
             pymongo.IndexModel([("employee_no", pymongo.ASCENDING)], unique=True),
             pymongo.IndexModel([("country", pymongo.ASCENDING)]),
             pymongo.IndexModel([("department", pymongo.ASCENDING)]),
-            pymongo.IndexModel(
-                [("country", pymongo.ASCENDING), ("level", pymongo.ASCENDING)]
-            ),
+            pymongo.IndexModel([("country", pymongo.ASCENDING), ("level", pymongo.ASCENDING)]),
             pymongo.IndexModel([("current_amount_minor", pymongo.DESCENDING)]),
             pymongo.IndexModel([("name", pymongo.ASCENDING)]),
         ]
@@ -66,7 +65,7 @@ class Band(Document):
 
     class Settings:
         name = "bands"
-        indexes = [
+        indexes: ClassVar[list[pymongo.IndexModel]] = [
             pymongo.IndexModel(
                 [("level", pymongo.ASCENDING), ("country", pymongo.ASCENDING)],
                 unique=True,
@@ -84,8 +83,6 @@ class Rate(Document):
 
     class Settings:
         name = "rates"
-        indexes = [
-            pymongo.IndexModel(
-                [("base", pymongo.ASCENDING), ("quote", pymongo.ASCENDING)]
-            )
+        indexes: ClassVar[list[pymongo.IndexModel]] = [
+            pymongo.IndexModel([("base", pymongo.ASCENDING), ("quote", pymongo.ASCENDING)])
         ]

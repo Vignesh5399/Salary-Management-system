@@ -78,9 +78,7 @@ def test_the_new_salary_applies_from_the_day_it_took_effect() -> None:
 def test_applying_a_raise_leaves_the_original_history_untouched() -> None:
     original = _hired_on_100k()
 
-    original.raise_to(
-        _inr("120000.00"), effective_from=date(2023, 4, 1), reason=ChangeReason.MERIT
-    )
+    original.raise_to(_inr("120000.00"), effective_from=date(2023, 4, 1), reason=ChangeReason.MERIT)
 
     assert original.current == _inr("100000.00")
     assert len(original.records) == 1
@@ -162,9 +160,7 @@ def test_no_two_records_ever_overlap() -> None:
     )
 
     periods = [record.period for record in history.records]
-    assert not any(
-        a.overlaps(b) for i, a in enumerate(periods) for b in periods[i + 1 :]
-    )
+    assert not any(a.overlaps(b) for i, a in enumerate(periods) for b in periods[i + 1 :])
 
 
 def test_the_salary_for_every_day_since_hire_is_answerable() -> None:

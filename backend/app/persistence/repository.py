@@ -87,19 +87,23 @@ class EmployeeRepository:
 
     async def payroll_by(self, dimension: str) -> list[dict[str, Any]]:
         """Headcount and total pay per group, per currency. Converted by the caller."""
-        return await Employee.get_motor_collection().aggregate(
-            [
-                {"$match": {"status": "active"}},
-                {
-                    "$group": {
-                        "_id": {"group": f"${dimension}", "currency": "$current_currency"},
-                        "headcount": {"$sum": 1},
-                        "total_minor": {"$sum": "$current_amount_minor"},
-                    }
-                },
-                {"$sort": {"_id.group": 1}},
-            ]
-        ).to_list(length=None)
+        return (
+            await Employee.get_motor_collection()
+            .aggregate(
+                [
+                    {"$match": {"status": "active"}},
+                    {
+                        "$group": {
+                            "_id": {"group": f"${dimension}", "currency": "$current_currency"},
+                            "headcount": {"$sum": 1},
+                            "total_minor": {"$sum": "$current_amount_minor"},
+                        }
+                    },
+                    {"$sort": {"_id.group": 1}},
+                ]
+            )
+            .to_list(length=None)
+        )
 
     async def apply_raise(
         self,
@@ -133,9 +137,7 @@ class EmployeeRepository:
             },
         )
         if result.matched_count == 0:
-            raise ConcurrentChange(
-                f"{employee_no}'s compensation changed since it was read"
-            )
+            raise ConcurrentChange(f"{employee_no}'s compensation changed since it was read")
 
     async def _require(self, employee_no: str) -> Employee:
         employee = await self.get(employee_no)

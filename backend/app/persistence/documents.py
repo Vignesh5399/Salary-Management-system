@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime
+from itertools import pairwise
 from typing import Any
 
 from app.domain.compensation import (
@@ -69,13 +70,11 @@ def _reject_unless_a_valid_chain(records: Sequence[CompensationRecord]) -> None:
     """Re-check what a partial unique index would have guaranteed in a relational store."""
     open_records = [record for record in records if record.period.is_open]
     if len(open_records) != 1:
-        raise MalformedDocument(
-            f"exactly one record must be current, found {len(open_records)}"
-        )
+        raise MalformedDocument(f"exactly one record must be current, found {len(open_records)}")
     if not records[-1].period.is_open:
         raise MalformedDocument("the current record must be the last one")
 
-    for earlier, later in zip(records, records[1:], strict=False):
+    for earlier, later in pairwise(records):
         if earlier.period.starts_on >= later.period.starts_on:
             raise MalformedDocument("compensation records are not in chronological order")
         if earlier.period.overlaps(later.period):

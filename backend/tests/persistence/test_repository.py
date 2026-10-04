@@ -88,9 +88,7 @@ async def test_a_raise_is_rejected_if_the_history_moved_under_us(
     with pytest.raises(ConcurrentChange):
         await repository.replace_compensation(
             "ACM-1",
-            stale.raise_by(
-                Decimal("20"), effective_from=RAISED, reason=ChangeReason.PROMOTION
-            ),
+            stale.raise_by(Decimal("20"), effective_from=RAISED, reason=ChangeReason.PROMOTION),
             expecting=stale,
         )
 
