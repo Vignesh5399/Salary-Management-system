@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from decimal import Decimal
@@ -85,9 +86,9 @@ class EmployeeRepository:
             }
         ).count()
 
-    async def payroll_by(self, dimension: str) -> list[dict[str, Any]]:
+    async def payroll_by(self, dimension: str) -> builtins.list[dict[str, Any]]:
         """Headcount and total pay per group, per currency. Converted by the caller."""
-        return (
+        rows: builtins.list[dict[str, Any]] = (
             await Employee.get_motor_collection()
             .aggregate(
                 [
@@ -104,6 +105,7 @@ class EmployeeRepository:
             )
             .to_list(length=None)
         )
+        return rows
 
     async def apply_raise(
         self,

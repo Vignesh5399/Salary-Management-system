@@ -10,6 +10,7 @@ import asyncio
 import random
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
+from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -187,7 +188,7 @@ def _employee(number: int, rng: random.Random) -> Employee:
 
 
 async def seed() -> None:
-    client = AsyncIOMotorClient(settings.mongodb_url)
+    client: AsyncIOMotorClient[dict[str, Any]] = AsyncIOMotorClient(settings.mongodb_url)
     await connect(client, settings.database_name)
 
     for model in (Employee, Band, Rate):

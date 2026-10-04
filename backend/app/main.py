@@ -1,6 +1,8 @@
 """The FastAPI application."""
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,8 +14,8 @@ from app.persistence.database import connect
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    client = AsyncIOMotorClient(settings.mongodb_url)
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    client: AsyncIOMotorClient[dict[str, Any]] = AsyncIOMotorClient(settings.mongodb_url)
     await connect(client, settings.database_name)
     yield
     client.close()

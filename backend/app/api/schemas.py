@@ -3,6 +3,7 @@ wire format and the database can change independently."""
 
 from datetime import date
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 
@@ -10,6 +11,9 @@ from app.domain.band import BandPosition
 from app.domain.compensation import ChangeReason, CompensationHistory
 from app.domain.money import Money
 from app.persistence.models import Employee
+
+if TYPE_CHECKING:
+    from app.domain.currency import Currency
 
 
 class MoneyOut(BaseModel):
@@ -114,7 +118,7 @@ def band_fields(position: BandPosition, ratio: Decimal) -> dict[str, object]:
     return {"band_position": position.value, "compa_ratio": ratio}
 
 
-def _currency(code: str):
+def _currency(code: str) -> "Currency":  # local import avoids a circular import
     from app.domain.currency import Currency
 
     return Currency.of(code)

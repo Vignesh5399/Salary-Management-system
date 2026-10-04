@@ -62,6 +62,9 @@ def _record_from_document(document: Mapping[str, Any]) -> CompensationRecord:
     except (UnknownCurrency, ValueError) as invalid:
         raise MalformedDocument(f"compensation record is not readable: {invalid}") from None
 
+    if starts_on is None:
+        raise MalformedDocument("compensation record has no start date")
+
     period = EffectivePeriod(starts_on=starts_on, ends_on=ends_on)
     return CompensationRecord(amount=amount, period=period, reason=reason)
 

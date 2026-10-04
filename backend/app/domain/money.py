@@ -36,7 +36,7 @@ class Money:
 
     @staticmethod
     def of(amount: str | Decimal, currency: str | Currency) -> Money:
-        if isinstance(amount, float):
+        if isinstance(amount, float):  # type: ignore[unreachable]  # untyped callers
             raise TypeError("Money cannot be built from a float; pass a str or Decimal")
 
         resolved = _resolve(currency)

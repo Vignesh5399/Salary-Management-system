@@ -35,7 +35,7 @@ class ExchangeRate:
 
     @staticmethod
     def of(base: str, quote: str, rate: str | Decimal, *, effective_from: date) -> ExchangeRate:
-        if isinstance(rate, float):
+        if isinstance(rate, float):  # type: ignore[unreachable]  # untyped callers
             raise TypeError("exchange rates must be a str or Decimal, never a float")
 
         value = Decimal(rate)
